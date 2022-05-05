@@ -1,9 +1,10 @@
 import Banner from "components/Banner";
 import PhotoForm from "features/Photo/components/PhotoForm";
-import { addPhoto } from "features/Photo/photoSlice";
+import { addPhoto, updatePhoto } from "features/Photo/photoSlice";
 import React from "react";
-import { useDispatch } from "react-redux";
-import { useHistory } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { useHistory, useParams } from "react-router-dom";
+import { randomNumber } from "utils/common";
 
 import "./styles.scss";
 
@@ -12,15 +13,38 @@ AddEditPage.propTypes = {};
 function AddEditPage(props) {
   const dispatch = useDispatch();
   const history = useHistory();
+  const { photoId } = useParams();
+  const isAddMode = !photoId;
+  // console.log({ photoId });
+  const editedPhoto = useSelector((state) =>
+    state.photos.find((x) => x.id === +photoId)
+  );
+
+  const initialValues = isAddMode
+    ? {
+        title: "",
+        categoryId: null,
+        photo: "",
+      }
+    : editedPhoto;
 
   const handleSubmit = (values) => {
     return new Promise((resolve) => {
       console.log("Form submit: ", values);
 
       setTimeout(() => {
-        const action = addPhoto(values);
-        console.log({ action });
-        dispatch(action);
+        if (isAddMode) {
+          const newPhoto = {
+            ...values,
+            id: randomNumber(10000, 99999),
+          };
+          const action = addPhoto(newPhoto);
+          console.log({ action });
+          dispatch(action);
+        } else {
+          const action = updatePhoto(values);
+          dispatch(action);
+        }
 
         history.push("/photos");
         resolve(true);
@@ -33,7 +57,11 @@ function AddEditPage(props) {
       <Banner title="Pick your amazing photo 😎" />
 
       <div className="photo-edit__form">
-        <PhotoForm onSubmit={handleSubmit} />
+        <PhotoForm
+          isAddMode={isAddMode}
+          initialValues={initialValues}
+          onSubmit={handleSubmit}
+        />
       </div>
     </div>
   );
