@@ -1,8 +1,10 @@
+import productApi from "api/productApi";
 import SignIn from "features/Auth/pages/SignIn";
 import firebase from "firebase/compat/app";
 import "firebase/compat/auth";
 import React, { Suspense, useEffect, useState } from "react";
 import { BrowserRouter, Redirect, Route, Switch } from "react-router-dom";
+import { Button } from "reactstrap";
 import "./App.scss";
 import Header from "./components/Header";
 import NotFound from "./components/NotFound";
@@ -19,7 +21,25 @@ const config = {
 firebase.initializeApp(config);
 
 function App() {
-  const [isSignedIn, setIsSignedIn] = useState(false);
+  const [productList, setProductList] = useState([]);
+
+  useEffect(() => {
+    const fetchProductList = async () => {
+      try {
+        const params = {
+          _page: 1,
+          _limit: 10,
+        };
+        const response = await productApi.getAll(params);
+        console.log(response);
+        setProductList(response.data);
+      } catch (error) {
+        console.log("Failed to fetch product list: ", error);
+      }
+    };
+
+    fetchProductList();
+  }, []);
 
   // Handle firebase auth changed
   useEffect(() => {
@@ -32,20 +52,39 @@ function App() {
           return;
         }
 
-        console.log("Logged in user: ", user.displayName);
+        // console.log("Logged in user: ", user.displayName);
 
-        const token = await user.getIdToken();
-        console.log("Logged in user token: ", token);
+        // const token = await user.getIdToken();
+        // console.log("Logged in user token: ", token);
+        localStorage.setItem(
+          "firebaseui::rememberedAccounts",
+          JSON.stringify(user.providerData)
+        );
       });
 
     return () => unregisterAuthObserver();
   }, []);
+
+  const handleButtonClick = async () => {
+    try {
+      const params = {
+        _page: 1,
+        _limit: 10,
+      };
+      const response = await productApi.getAll(params);
+      console.log(response);
+    } catch (error) {
+      console.log("Failed to fetch product list: ", error);
+    }
+  };
 
   return (
     <div className="photo-app">
       <Suspense fallback={<div>Loading ...</div>}>
         <BrowserRouter>
           <Header />
+
+          <Button onClick={handleButtonClick}>Fetch Product List</Button>
 
           <Switch>
             <Redirect exact from="/" to="/photos" />
