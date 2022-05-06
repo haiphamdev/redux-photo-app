@@ -1,8 +1,11 @@
+import { unwrapResult } from "@reduxjs/toolkit";
 import productApi from "api/productApi";
+import { getMe } from "app/userSlice";
 import SignIn from "features/Auth/pages/SignIn";
 import firebase from "firebase/compat/app";
 import "firebase/compat/auth";
 import React, { Suspense, useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 import { BrowserRouter, Redirect, Route, Switch } from "react-router-dom";
 import { Button } from "reactstrap";
 import "./App.scss";
@@ -22,6 +25,7 @@ firebase.initializeApp(config);
 
 function App() {
   const [productList, setProductList] = useState([]);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const fetchProductList = async () => {
@@ -60,6 +64,15 @@ function App() {
           "firebaseui::rememberedAccounts",
           JSON.stringify(user.providerData)
         );
+
+        // Get me when signed in
+        try {
+          const actionResult = await dispatch(getMe());
+          const currentUser = unwrapResult(actionResult);
+          console.log("Logged in user: ", currentUser);
+        } catch (error) {
+          console.log("Failed to login: ", error.message);
+        }
       });
 
     return () => unregisterAuthObserver();
