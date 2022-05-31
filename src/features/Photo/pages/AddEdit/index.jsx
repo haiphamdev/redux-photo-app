@@ -39,7 +39,7 @@ function AddEditPage(props) {
             id: randomNumber(10000, 99999),
           };
           const action = addPhoto(newPhoto);
-          console.log({ action });
+          // console.log({ action });
           dispatch(action);
         } else {
           const action = updatePhoto(values);

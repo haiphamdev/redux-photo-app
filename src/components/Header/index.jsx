@@ -1,4 +1,5 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import { NavLink } from "react-router-dom";
 import { Col, Container, Row } from "reactstrap";
 import "./Header.scss";
@@ -6,6 +7,9 @@ import "./Header.scss";
 Header.propTypes = {};
 
 function Header() {
+  const loggedInUser = useSelector((state) => state.user.current);
+  const isLogginIn = !!loggedInUser.id;
+  console.log(loggedInUser.photoUrl);
   return (
     <header className="header">
       <Container>
@@ -22,14 +26,18 @@ function Header() {
           </Col>
 
           <Col xs="auto">
-            <NavLink
-              exact
-              className="header__link"
-              to="/sign-in"
-              activeClassName="header__link--active"
-            >
-              Sign In
-            </NavLink>
+            {!isLogginIn && (
+              <NavLink
+                exact
+                className="header__link"
+                to="/sign-in"
+                activeClassName="header__link--active"
+              >
+                Sign In
+              </NavLink>
+            )}
+
+            {isLogginIn && <p>{loggedInUser.name}</p>}
           </Col>
         </Row>
       </Container>
